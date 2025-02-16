@@ -10,6 +10,11 @@ def table_creation():
     connection = sqlite3.connect("star_schema.db")
     cursor = connection.cursor()
     
+    cursor.execute("DROP TABLE IF EXISTS FactSales")
+    cursor.execute("DROP TABLE IF EXISTS DimCustomer")
+    cursor.execute("DROP TABLE IF EXISTS DimBook")
+    cursor.execute("DROP TABLE IF EXISTS DimDate")
+
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS DimCustomer (
@@ -25,7 +30,7 @@ def table_creation():
         CREATE TABLE IF NOT EXISTS DimBook (
             BookID INTEGER PRIMARY KEY,
             BookName TEXT,
-            Genre TEXT,
+            Publisher TEXT,
             Price REAL
         )
         """
@@ -84,7 +89,7 @@ def data_gen(num_id):
     date_array = []
 
     for i in range(num_id):
-        date_array.append(id_gen[i])
+        #date_array.append(id_gen[i])
 
         rand_day = random.randint(0, date_diff.days)
         random_date = start_date + timedelta(days=rand_day)
@@ -96,18 +101,47 @@ def data_gen(num_id):
     path = kagglehub.dataset_download("saurabhbagchi/books-dataset")
     print("path: ", path)
 
-    file_path = "put your own fp here"
+    file_path = r"C:\Users\arkih\.cache\kagglehub\datasets\saurabhbagchi\books-dataset\versions\1\books_data\books.csv"
 
     with open(file_path, "rb") as f:
         result = chardet.detect(f.read(100000))  # Read first 100,000 bytes
         print(result["encoding"])
 
-   # path=r"C:\Users\arkih\Desktop\DataEngineering\book_folder", force_download=True
     df = pd.read_csv(file_path, encoding="ISO-8859-1", sep=";", quoting=csv.QUOTE_NONE, on_bad_lines="skip")
-    print(df.columns)
-    df = df['"Book-Title"']
+    row_count = len(df)
+    print("amount of rows: {}".format(row_count))
 
-    
+    print(df.columns)
+    df_book = df['"Book-Title"']
+    df_publisher = df['"Publisher"']
+
+    #random book selection
+
+    #random_book_id = (random.randint(0, 250012)) + 1
+    #print("Random book id: {}".format(random_book_id))
+
+    #random_book = df_book.iloc[random_book_id]
+    #print("Random chosen book: {}".format(random_book))
+
+    book_arr = []
+    publisher_arr = []
+    price_set = {8, 9.99, 12.50, 25}
+    price_arr = []
+
+    for i in range(num_id):
+        random_book_id = (random.randint(0, 250012)) + 1
+        
+        random_book = df_book.iloc[random_book_id]
+        random_publisher = df_publisher.iloc[random_book_id]
+        random_price = price_set.pop()
+        price_set.add(random_price)
+
+        book_arr.append(random_book)
+        publisher_arr.append(random_publisher)
+        price_arr.append(random_price)
+        print("Book chosen: {}".format(book_arr[i]))
+        print("Book's publisher: {}".format(publisher_arr[i]))
+        print("Book's price: {}".format(price_arr[i]))
 
     return
 
@@ -122,7 +156,7 @@ def insert_sample_data():
 
     cursor.execute("INSERT INTO DimCustomer (CustomerID, Name, Age) VALUES (1, 'Arki', 22)")
     
-    cursor.execute("INSERT INTO DimBook (BookID, BookName, Genre, Price) VALUES (1, 'Blood Meridian', 'Fiction', 10.99)")
+    cursor.execute("INSERT INTO DimBook (BookID, BookName, Publisher, Price) VALUES (1, 'Blood Meridian', 'Fiction', 10.99)")
     
     cursor.execute("INSERT INTO DimDate (DateID, Date) VALUES (1, '01-01-2025')")
     
