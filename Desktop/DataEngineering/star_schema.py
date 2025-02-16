@@ -89,8 +89,6 @@ def data_gen(num_id):
     date_array = []
 
     for i in range(num_id):
-        #date_array.append(id_gen[i])
-
         rand_day = random.randint(0, date_diff.days)
         random_date = start_date + timedelta(days=rand_day)
 
@@ -115,14 +113,6 @@ def data_gen(num_id):
     df_book = df['"Book-Title"']
     df_publisher = df['"Publisher"']
 
-    #random book selection
-
-    #random_book_id = (random.randint(0, 250012)) + 1
-    #print("Random book id: {}".format(random_book_id))
-
-    #random_book = df_book.iloc[random_book_id]
-    #print("Random chosen book: {}".format(random_book))
-
     book_arr = []
     publisher_arr = []
     price_set = {8, 9.99, 12.50, 25}
@@ -143,7 +133,40 @@ def data_gen(num_id):
         print("Book's publisher: {}".format(publisher_arr[i]))
         print("Book's price: {}".format(price_arr[i]))
 
-    return
+    # Cutomer dimension 
+
+    name_path = kagglehub.dataset_download("utkarshx27/popular-baby-names")
+    print("Path to dataset files:", name_path)
+
+    name_file_path = r"C:\Users\arkih\.cache\kagglehub\datasets\utkarshx27\popular-baby-names\versions\1\Popular_Baby_Names.csv"
+
+    with open(name_file_path, "rb") as f:
+        result = chardet.detect(f.read(100000)) 
+        print(result["encoding"])
+
+    df_names = pd.read_csv(name_file_path, encoding="ascii", sep=",", quoting=csv.QUOTE_NONE, on_bad_lines="skip")
+    name_row_count = len(df_names)
+
+    print("amount of rows: {}".format(name_row_count))
+    print(df_names.columns)
+
+    df_baby_names = df_names.iloc[:, 3]  
+    print("baby names: " + df_baby_names.name)
+
+    name_arr = []
+    age_arr = []
+
+    for i in range(num_id):
+        random_name_id = random.randint(0, 49508) + 1
+        random_age = random.randint(5, 100)
+
+        name_arr.append(df_baby_names.iloc[random_name_id])
+        age_arr.append(random_age)
+
+        print("Chosen name: {}".format(name_arr[i]))
+        print("Customer's age: {}".format(random_age))
+
+    return name_arr, age_arr, book_arr, publisher_arr, price_arr, date_array, id_gen
 
 def insert_sample_data():
     connection = sqlite3.connect("star_schema.db")
