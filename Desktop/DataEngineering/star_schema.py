@@ -1,5 +1,10 @@
 import sqlite3
 import pandas as pd
+from datetime import datetime, timedelta
+import random
+import kagglehub
+import chardet
+import csv
 
 def table_creation():
     connection = sqlite3.connect("star_schema.db")
@@ -66,6 +71,46 @@ def table_creation():
     
     connection.close()
 
+def data_gen(num_id):
+    # Fact table
+    id_gen = [x for x in range(num_id)]
+
+    #Date dimension
+    start_date = datetime(2020,1 ,1)
+    end_date = datetime(2026, 1, 1)
+
+    date_diff = end_date - start_date
+
+    date_array = []
+
+    for i in range(num_id):
+        date_array.append(id_gen[i])
+
+        rand_day = random.randint(0, date_diff.days)
+        random_date = start_date + timedelta(days=rand_day)
+
+        date_array.append(random_date)
+
+    #Book dimension
+
+    path = kagglehub.dataset_download("saurabhbagchi/books-dataset")
+    print("path: ", path)
+
+    file_path = "put your own fp here"
+
+    with open(file_path, "rb") as f:
+        result = chardet.detect(f.read(100000))  # Read first 100,000 bytes
+        print(result["encoding"])
+
+   # path=r"C:\Users\arkih\Desktop\DataEngineering\book_folder", force_download=True
+    df = pd.read_csv(file_path, encoding="ISO-8859-1", sep=";", quoting=csv.QUOTE_NONE, on_bad_lines="skip")
+    print(df.columns)
+    df = df['"Book-Title"']
+
+    
+
+    return
+
 def insert_sample_data():
     connection = sqlite3.connect("star_schema.db")
     cursor = connection.cursor()
@@ -88,6 +133,7 @@ def insert_sample_data():
 
 def main():
     table_creation()
+    data_gen(10)
     insert_sample_data()
 
 if __name__ == "__main__":
